@@ -1,0 +1,125 @@
+\documentclass[12pt]{article}
+\usepackage[T1]{fontenc} 
+\usepackage[utf8]{inputenc} 
+
+\usepackage{comment} 
+\usepackage{amsfonts}
+\usepackage{setspace}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage{tikz-cd}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}%花体字母加粗
+\usepackage{mathrsfs}%花体字母
+\usepackage{bbm}%示性函数
+\usepackage{graphicx} 
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+%%%
+
+\usepackage[french]{babel}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage[center]{caption2}
+\usepackage{mdframed}
+\usepackage{hyperref,titlesec}
+%\usepackage[top=3cm,bottom=3cm,left=3cm,right=3cm]{geometry}
+
+
+\begin{document}
+	
+
+	
+	\title{\textbf{Structured Project Master 2016-2017 \\ Structured Output Prediction of Anti-Cancer Drug Activity}, Hongyu Su, Markus Heinonen, and Juho Rousu}%replace X with the appropriate number
+	\author{Ngoc Huyen Luu\\ Hospice Dossou-Yovo
+		}
+
+	\maketitle
+
+\section*{Introduction}
+Machine learning has become increasingly important in the domain of drug discovery. In medical cancer treatment, people usually work on a collected dataset that contain numerous of information about different targets, for example different kind of viruses, cancer types… that share the same characteristics. Several methods like inductive logic programming and artificial neural networks are used for example in the task of molecule classification which consists to predict the presence or absence of the bioactivity of interest. However, classification methods focusing on a single target variable are probably not optimally suited to drug screening applications where large number of target cell lines are to be handled. A very useful question was posed: Can we predict the activity better by learning against all available targets at the same time? The paper “Structured Output Prediction of Anti-Cancer Drug Activity” will give a point of view about solving multilabel classification in biological molecule. The main goal of the publication is predicting the active or not active anti-cancer treatments with given molecules which are represented via kernels based on molecular graphs. Among the 59 cancer cell lines, 5000 molecules were experimented by the graph kernels before applying multilabel classification learning algorithms. In case of this research, structured Support Vector Machine (SVM) and Max Margin Conditional Random Field (MMCRF) will be used and compared the results at the end.
+
+\section{Problem}
+The goal of this article is to apply multilabel learning approach for molecular classification. It consists to predict the presence or absence of the bioactivity of interest (given molecule, predict active/not active). %- start of the art method: SVM with graph kernels over the molecules). 
+For do that, the basis approach consists to build a single-label classifier for each individual label, compose the multilabels from their output. Indeed, in the case of single label classification, for given molecule $x_i$ predicts $y_i$ with $y_i \in \{0,1\}$. For the multilabel calssification, multiple labels (targets) associate with each example, for $x_i$ predicts $y_i = y_1\times y_2\times\cdots\times y_k$ with $y_i \in \{0,1\}$. This approach doesn't benefit from possible statistical dependencies between labels.\\
+%However, classification methods focusing on a single target variable aren't probably optimal. Indeed, in the case of single label classification, for given molecule $x_i$ predicts $y_i$ with $y_i \in \{0,1\}$. For the multilabel calssification, multiple labels (targets) associate with each example, for $x_i$ predicts $y_i = y_1\times y_2\times\cdots\times y_k$ with $y_i \in \{0,1\}$\\
+%The basis approach consists to build a single-label classifier for each individual label, compose the multilabels from their output. This approach doesn't benefit from possible statistical dependencies between labels.\\
+To overcome this difficulty, the authors propose one method which belongs to the structured output prediction family. In the next section, we present briefly this approach.
+
+\section{Description of method}
+The authors proposed the Max-Margin Conditional Random Field (MMCRF). This method married graphical methods and kernels. It uses structure (graph, tree, sequence) of the output to predict the multilabel in a single shot. Then, the drug targets (cancer cell lines) are organized in a Markov network, drug molecules are represented by kernel.\\
+%In this section, we present the approach of the authors for attending 
+%In this section, we present two differents methods for attending our goal of prediction : Max-Margin Conditional Random Field (MMCRF) and Support Vector Machine (SVM).\\
+%\subsection{Structured output learning with MMCRF}
+%The MMCRF learning algorithm married graphical methods and kernels. This method utilizes structure (graph, tree, sequence) of the output to predict the multilabel in a single shot. Then, the drug targets (cancer cell lines) are organized in a Markov network, drug molecules are represented by kernel. 
+The MMCRF algorithm takes like input representation kernels over molecular graphs. So, it takes as input
+%Then, the MMCRF learning algorithm takes as input 
+a matrix $K = (k(x_i,x_j))_{i,j=1}^m$ (m is the number of molecules) of kernel values $k(x_i,x_j) = \phi(x_i)^T\phi(x_j)$ between the training patterns where $\phi(x)$ denotes a feature description of an input pattern (drug molecule in our case) and a label matrix $Y = (y_i)_{i=1}^m$ containing the multilabels $y_i = (y_{i1},...,y_{ik})$ of the training patterns. The components $y_{j} \in \{-1,+1\}$ of the multilabel correspond to different cancer cell lines.\\
+A major challenge for any statistical learning model is to define a measure of similarity.
+There exists various kernels applicable for molecular graphs: Walk kernels, Weighted decomposition kernel and Tanimoto kernel. In our case, we use Tanimoto kernel.
+\subsubsection*{Definition of Tanimoto kernel}
+Let denote \textbf{u,v} two molecules and d be an integer. Consider the feature map $\phi_d$ and the corresponding kernel $k_d$. The Tanimoto kernel $k_d^t$ is defined by: $$ k_d^t(u,v) = \frac{k_d(u,v)}{k_d(u,u) + k_d(v,v) - k_d(u,v)} $$
+Then, we have a square matrix of shape (m, m).
+\\
+In order to use MMCRF to classify drug molecules, the authors build a Markov network for the cell lines used as the output, with nodes corresponding to cell lines and edges to potential statistical dependencies.
+The algorithm assumes also an associative network $\mathcal{G} = (V,E)$ where node $j \in V$ corresponds to the j'th component of the multilabel and the edges $e = (j,j') \in E$ correspond to a microlabel depency structure.\\
+In conclusion, the MMCRF framework consists of the following components:
+\begin{itemize}
+	\item Max-margin learning: Maximize the margin between real example $\phi(x_i,y_i)$ and all the incorrect pseudo-examples $\phi(x_i,y)$ whilst controlling the norm of the weight vector.
+	\item Use of kernels K(x, x') to tackle hight-dimensionality of input feature maps
+	\item Use a graphical model techniques for tackle the exponential size of the multilabel space
+\end{itemize}
+%\subsection{Structured output learning with SVM}
+%The Structured Output learning with SVM consists ...
+\section{Presentation of data}
+For this project, we use the National Cancer Institute (NCI) dataset. Our study focuses on \textbf{5000} molecules (No-zero active dataset). For each molecule tested against a certain cell line, the dataset provide a bioactivity outcome that we use as the classes (active, inactive).\\
+%For making our study, we are two dfferents datasets: Gram matrix of molecules and label dataset of molecules.\\
+%%%%%%%%%%
+Although we have been provided the dataset of Tanimoto kernel and their activities at first but the meaningful of binary values which correspond to active/inactive anti-cancer are still missing. Then these values was available by Github “Molecular classification” of Hongyu Shu but unfortunately, they do not correspond with provided initial Tanimoto kernel dataset, perhaps driver from the difference of database. Therefore, we decided to use the dataset which was described from Github and could be found at here:\\ ftp://ftp.ncbi.nlm.nih.gov/pubchem/Bioassay/CSV/Data/0000001\_0001000.zip. \\
+After the preprocessing to remove all the missing values and meaningless cell lines, we obtained overall 5000 molecules and around 60 cell lines. We still need binary value as the activity outcome for classification task, a molecule is 'active' if the activity score is over 60 and 'inactive' otherwise.
+
+%%%%%%%%%%
+\begin{figure}[ht]
+	\centering
+	\caption{Description of data}
+	\includegraphics[scale=0.75]{photo2}
+\end{figure}
+%\subsection*{Gram matrix dataset}
+%A major challenge for any statistical learning model is to define a measure of similarity. In our case, it is the \textbf{Tanimoto Kernel} which is used to determine our Gram matrix. \\
+%%Let denote \textbf{u,v} two molecules and d be an integer. Consider the feature map $\phi_d$ and the corresponding kernel $k_d$. The Tanimoto kernel $k_d^t$ is defined by: $$ k_d^t(u,v) = \frac{k_d(u,v)}{k_d(u,u) + k_d(v,v) - k_d(u,v)} $$
+%Then, we have a square matrix of shape (2305, 2305).
+%\subsection*{Label dataset}
+%In this dataset, we have the label of each molecule. Then, each molecule has 59 differents targets which represent
+%%The drug targets (cancer cell lines) are organized in a Markov network, drug molecules are represented by kernels and discriminative max-margin training is used to learn parameters.
+\section{Preprocessing}
+%In the preprocessing part, we compute the Gram matrix and the graph network.
+%%%%%
+In the preprocessing part, we do Kernel computation. 
+%Kernel computation:
+For each molecule, we generate a fingerprint vector of type fp2, fp3, and fp4 generated by Openbabel. Then we can compute the Tanimoto kernel based on the fingerprints which is defined on two binary bit vectors as we have mentioned above. To compute many kinds graph kernel, we tried to convert each molecule into adjacency matrix, then we used the open source on Matlab that can be found at: https://www.bsse.ethz.ch/mlcb/research/machine-learning/graph-kernels/graph-kernels.html \\which will take in a parameter of the kernel type and compute the corresponding kernel matrix over 5000 molecules.\\
+%%%%%
+In order to evaluate the performance of the MMCRF algorithm, we compare the MMCRF against SVM method.
+\section{Results and discussions}
+
+Since the limitation of time, we used both Matlab (MMCRF) and Python (Strutured Multilabel SVM) for implementation of the code and final results. In particular, we benefited aslo the package Pystruct for running Structured SVM with different margin C parameters and ChainCFR which is might better be called Maximum Margin Random Fields to comparer the results with the publication. F1 scores with two tailed sign test has been used to observe more about the testing performances. 
+
+Because the paper have concluded that Tanimoto kernel is slightly better than others in microlabels F1 score thus we used Taminoto to experience all the test. Overall, with Tanimoto kernel, the accuracies of SVM and MMCRF are respectively 61.2\% and 66.3\% which are less than their values in paper. Additionally, F1 scores are as well as slightly different from the obtained results in research (49.7\%, 56.4\% in comparison with 52.7\%, 56.2\%), we expected the reasons driver from the different construction in algorithm between Pytruct package and LibSVM software written in C++. However, there is a same conclusion that MMCRF is markedly more accurate than SVM in both the test and MMCRF in additionally improves significantly the F1 scores over SVM. In the research, the authors supposed that SVM will be better than MMCRF in case of negative class (inactive anti-cancer) but we did not observe that result. 
+\begin{figure}[ht]
+	\centering
+	%\caption{}
+	\includegraphics[scale=0.5]{photo_cap}	
+\end{figure}
+\newpage
+Due to the large amount of processing data (5000 complete molecules among 40000 initials), the training time of classifiers become seriously important. The training time of both methods increased exponential in term of expansion of training sets. Nevertheless, the training time of SVM become very slowly from training size of 2500. Overall, to run all the data set, the SVM requires around 845.88s-715.9s in compared with MMCRF 459.33s-421.2s that gives us a potential attention.
+
+%\subsection*{Results of MMCRF}
+
+%\subsection*{Results of SVM}
+
+%\subsection*{Comparison of two approaches}
+
+\section*{Conclusion}
+We observe clearly that in multi-label classification problem such that testing the drug activity of anti-cancer, MMCRF method could be a very interesting and potential approach to solve the problem in term of its accuracy and training time in comparison with other classic classification such that structured SVM especially in case of very large size of dataset. \\
+\end{document}
+
